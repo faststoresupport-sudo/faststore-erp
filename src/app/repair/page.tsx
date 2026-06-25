@@ -131,34 +131,34 @@ export default function RepairPage() {
         <span className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider">{title}</span>
         {action}
       </div>
-      <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl overflow-hidden shadow-sm border border-gray-200/60 dark:border-gray-700/60">
+      <div className="bg-white/70 backdrop-blur-xl rounded-2xl overflow-hidden shadow-sm border border-gray-200/60 ">
         {children}
       </div>
     </div>
   )
 
   const IOSRow = ({ left, right, last, onClick }: { left: React.ReactNode; right?: React.ReactNode; last?: boolean; onClick?: () => void }) => (
-    <div onClick={onClick} className={`flex items-center justify-between px-4 py-3.5 ${!last ? 'border-b border-gray-100 dark:border-gray-700/50' : ''} ${onClick ? 'active:bg-gray-50 dark:active:bg-gray-800 cursor-pointer' : ''}`}>
+    <div onClick={onClick} className={`flex items-center justify-between px-4 py-3.5 ${!last ? 'border-b border-gray-100 ' : ''} ${onClick ? 'active:bg-gray-50 dark:active:bg-gray-800 cursor-pointer' : ''}`}>
       <div className="flex-1 min-w-0">{left}</div>
       {right && <div className="flex-shrink-0 ml-3">{right}</div>}
-      {onClick && <span className="text-gray-300 dark:text-gray-600 ml-2 text-lg">›</span>}
+      {onClick && <span className="text-gray-300  ml-2 text-lg">›</span>}
     </div>
   )
 
   return (
     <DashboardLayout>
-      <div className="p-4 lg:p-6 bg-[#f2f2f7] dark:bg-[#000000] min-h-full">
+      <div className="p-4 lg:p-6 min-h-full" style={{ background: '#f2f2f7' }}>
         {/* Header */}
         <div className="mb-5">
-          <h1 className="text-[28px] font-bold text-gray-900 dark:text-white tracking-tight">Tamirlash</h1>
+          <h1 className="text-[28px] font-bold text-gray-900 tracking-tight">Tamirlash</h1>
           <p className="text-[15px] text-gray-500 mt-0.5">{stats.jami} ta buyurtma · {stats.jarayonda} ta jarayonda</p>
         </div>
 
         {/* iOS Segmented Control */}
-        <div className="bg-gray-200/80 dark:bg-[#2c2c2e] rounded-xl p-1 flex mb-5">
+        <div className="bg-gray-200/80 bg-gray-200/80 rounded-xl p-1 flex mb-5">
           {[{ k: 'orders', l: '🔧 Buyurtmalar' }, { k: 'clients', l: '👥 Mijozlar' }].map(t => (
             <button key={t.k} onClick={() => setTab(t.k as any)}
-              className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all ${tab === t.k ? 'bg-white dark:bg-[#3a3a3c] text-gray-900 dark:text-white shadow-sm' : 'text-gray-500'}`}>
+              className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-all ${tab === t.k ? 'bg-white bg-white text-gray-900  shadow-sm' : 'text-gray-500'}`}>
               {t.l}
             </button>
           ))}
@@ -175,7 +175,7 @@ export default function RepairPage() {
                 { l: 'Tayyor', v: stats.tayyor, c: 'text-green-500' },
                 { l: 'Topshirildi', v: stats.topshirildi, c: 'text-purple-500' },
               ].map((s, i) => (
-                <div key={i} className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-3 text-center shadow-sm border border-gray-200/60 dark:border-gray-700/60">
+                <div key={i} className="bg-white/70 backdrop-blur-xl rounded-2xl p-3 text-center shadow-sm border border-gray-200/60 ">
                   <div className={`text-xl font-bold ${s.c}`}>{s.v}</div>
                   <div className="text-[10px] text-gray-400 uppercase mt-0.5">{s.l}</div>
                 </div>
@@ -192,7 +192,7 @@ export default function RepairPage() {
             <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
               {[{ v: 'barchasi', l: 'Barchasi' }, ...HOLATLAR.map(h => ({ v: h.val, l: h.icon + ' ' + h.label }))].map(f => (
                 <button key={f.v} onClick={() => setFilter(f.v)}
-                  className={`px-3.5 py-1.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all ${filter === f.v ? 'bg-blue-500 text-white' : 'bg-white dark:bg-[#2c2c2e] text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'}`}>
+                  className={`px-3.5 py-1.5 rounded-full text-[12px] font-semibold whitespace-nowrap transition-all ${filter === f.v ? 'bg-blue-500 text-white' : 'bg-white bg-gray-200/80 text-gray-600  border border-gray-200 dark:border-gray-700'}`}>
                   {f.l}
                 </button>
               ))}
@@ -202,14 +202,14 @@ export default function RepairPage() {
             <div className="relative mb-4">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
               <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Qidirish..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1c1c1e] border border-gray-200/60 dark:border-gray-700/60 rounded-xl text-[14px] outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all" />
+                className="w-full pl-10 pr-4 py-2.5 bg-white/70 backdrop-blur-xl border border-gray-200/60  rounded-xl text-[14px] outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all" />
             </div>
 
             {/* Orders list */}
             {filteredOrders.length === 0 ? (
-              <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-10 text-center border border-gray-200/60 dark:border-gray-700/60">
+              <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-10 text-center border border-gray-200/60">
                 <div className="text-4xl mb-3">🔧</div>
-                <div className="font-semibold text-gray-900 dark:text-white">Buyurtma yo'q</div>
+                <div className="font-semibold text-gray-900">Buyurtma yo'q</div>
                 <p className="text-sm text-gray-400 mt-1">Yangi buyurtma qo'shing</p>
               </div>
             ) : (
@@ -217,29 +217,29 @@ export default function RepairPage() {
                 {filteredOrders.map(o => {
                   const h = getHolat(o.holat)
                   return (
-                    <div key={o.id} className="bg-white dark:bg-[#1c1c1e] rounded-2xl overflow-hidden shadow-sm border border-gray-200/60 dark:border-gray-700/60 active:scale-[0.99] transition-transform">
+                    <div key={o.id} className="bg-white/70 backdrop-blur-xl rounded-2xl overflow-hidden shadow-sm border border-gray-200/60  active:scale-[0.99] transition-transform">
                       <div className="p-4" onClick={() => setDetailOrder(o)}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-[15px] text-gray-900 dark:text-white">{o.qurilma}</span>
+                            <span className="font-bold text-[15px] text-gray-900 ">{o.qurilma}</span>
                             <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full text-white ${h.color}`}>{h.icon} {h.label}</span>
                           </div>
                           <span className="text-[12px] text-gray-400">#{o.id.toString().slice(-4)}</span>
                         </div>
                         <div className="text-[13px] text-gray-500 mb-1">👤 {o.mijoz} · 📞 {o.telefon}</div>
-                        <div className="text-[13px] text-gray-600 dark:text-gray-400">{o.muammo}</div>
+                        <div className="text-[13px] text-gray-600 ">{o.muammo}</div>
                         <div className="flex items-center justify-between mt-3">
                           <span className="text-[12px] text-gray-400">📅 {o.sana}{o.shahar ? ' · 📍 ' + o.shahar : ''}</span>
                           <span className="font-bold text-[14px] text-green-600">{o.narx > 0 ? Math.round(o.narx * 12700).toLocaleString() + " so'm" : ''}</span>
                         </div>
                       </div>
                       {/* Actions */}
-                      <div className="px-4 py-2.5 bg-gray-50 dark:bg-[#2c2c2e] border-t border-gray-100 dark:border-gray-700/50 flex gap-2">
+                      <div className="px-4 py-2.5 bg-gray-50 bg-gray-200/80 border-t border-gray-100  flex gap-2">
                         {o.holat === 'qabul' && <button onClick={() => changeHolat(o.id, 'diagnostika')} className="text-[12px] px-3 py-1.5 bg-orange-500 text-white rounded-full font-semibold">🔍 Diagnostika</button>}
                         {o.holat === 'diagnostika' && <button onClick={() => changeHolat(o.id, 'tamirlashda')} className="text-[12px] px-3 py-1.5 bg-blue-500 text-white rounded-full font-semibold">🔧 Tamirlash</button>}
                         {o.holat === 'tamirlashda' && <button onClick={() => changeHolat(o.id, 'tayyor')} className="text-[12px] px-3 py-1.5 bg-green-500 text-white rounded-full font-semibold">✅ Tayyor</button>}
                         {o.holat === 'tayyor' && <button onClick={() => changeHolat(o.id, 'topshirildi')} className="text-[12px] px-3 py-1.5 bg-purple-500 text-white rounded-full font-semibold">🏁 Topshirish</button>}
-                        <button onClick={() => printChek(o)} className="text-[12px] px-3 py-1.5 bg-white dark:bg-[#3a3a3c] border border-gray-200 dark:border-gray-600 rounded-full font-medium text-gray-600 dark:text-gray-300">🖨️ Chek</button>
+                        <button onClick={() => printChek(o)} className="text-[12px] px-3 py-1.5 bg-white bg-white border border-gray-200 dark:border-gray-600 rounded-full font-medium text-gray-600 ">🖨️ Chek</button>
                         <div className="flex-1" />
                         <button onClick={() => deleteOrder(o.id)} className="text-[12px] px-2.5 py-1.5 text-red-500 font-medium">O'chirish</button>
                       </div>
@@ -260,9 +260,9 @@ export default function RepairPage() {
             </button>
 
             {mijozlar.length === 0 ? (
-              <div className="bg-white dark:bg-[#1c1c1e] rounded-2xl p-10 text-center border border-gray-200/60 dark:border-gray-700/60">
+              <div className="bg-white/70 backdrop-blur-xl rounded-2xl p-10 text-center border border-gray-200/60 ">
                 <div className="text-4xl mb-3">👥</div>
-                <div className="font-semibold text-gray-900 dark:text-white">Mijoz yo'q</div>
+                <div className="font-semibold text-gray-900 ">Mijoz yo'q</div>
               </div>
             ) : (
               <IOSSection title={`${mijozlar.length} ta mijoz`}>
@@ -274,7 +274,7 @@ export default function RepairPage() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{(m.ism || '?')[0]}</div>
                           <div>
-                            <div className="font-semibold text-[15px] text-gray-900 dark:text-white">{m.ism}</div>
+                            <div className="font-semibold text-[15px] text-gray-900 ">{m.ism}</div>
                             <div className="text-[13px] text-gray-500">{m.telefon}{m.shahar ? ' · ' + m.shahar : ''}</div>
                           </div>
                         </div>
@@ -295,14 +295,14 @@ export default function RepairPage() {
 
         {/* ═══ MIJOZ QO'SHISH MODAL (iOS Sheet) ═══ */}
         {clientModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setClientModal(false)}>
-            <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setClientModal(false)}>
+            <div className="bg-white/70 backdrop-blur-xl w-full max-w-md rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
               {/* Handle */}
-              <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" /></div>
+              <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-300 " /></div>
               {/* Header */}
-              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-700/50">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 ">
                 <button onClick={() => setClientModal(false)} className="text-[16px] text-blue-500 font-medium">Bekor</button>
-                <span className="text-[16px] font-bold text-gray-900 dark:text-white">Yangi Mijoz</span>
+                <span className="text-[16px] font-bold text-gray-900 ">Yangi Mijoz</span>
                 <button onClick={addClient} className="text-[16px] text-blue-500 font-bold">Saqlash</button>
               </div>
               {/* Form */}
@@ -310,17 +310,17 @@ export default function RepairPage() {
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Ism</label>
                   <input type="text" value={cForm.ism} onChange={e => setCForm(f => ({ ...f, ism: e.target.value }))} placeholder="Ism Familiya" autoFocus
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Telefon</label>
                   <input type="tel" value={cForm.telefon} onChange={e => setCForm(f => ({ ...f, telefon: e.target.value }))} placeholder="+998901234567"
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Qayerdan (shahar)</label>
                   <input type="text" value={cForm.shahar} onChange={e => setCForm(f => ({ ...f, shahar: e.target.value }))} placeholder="Toshkent"
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
               </div>
             </div>
@@ -329,19 +329,19 @@ export default function RepairPage() {
 
         {/* ═══ BUYURTMA QO'SHISH MODAL ═══ */}
         {orderModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setOrderModal(false)}>
-            <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" /></div>
-              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-700/50 flex-shrink-0">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setOrderModal(false)}>
+            <div className="bg-white/70 backdrop-blur-xl w-full max-w-md rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-300 " /></div>
+              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100  flex-shrink-0">
                 <button onClick={() => setOrderModal(false)} className="text-[16px] text-blue-500 font-medium">Bekor</button>
-                <span className="text-[16px] font-bold text-gray-900 dark:text-white">{editOrderId ? 'Tahrirlash' : 'Yangi Buyurtma'}</span>
+                <span className="text-[16px] font-bold text-gray-900 ">{editOrderId ? 'Tahrirlash' : 'Yangi Buyurtma'}</span>
                 <button onClick={addOrder} className="text-[16px] text-blue-500 font-bold">Saqlash</button>
               </div>
               <div className="p-6 space-y-4 flex-1 overflow-y-auto">
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Mijoz</label>
                   <select value={oForm.mijoz_id} onChange={e => setOForm(f => ({ ...f, mijoz_id: +e.target.value }))}
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  outline-none focus:ring-2 focus:ring-blue-500/30 transition-all">
                     <option value={0}>— Mijozni tanlang —</option>
                     {mijozlar.map(m => <option key={m.id} value={m.id}>{m.ism} · {m.telefon}</option>)}
                   </select>
@@ -350,22 +350,22 @@ export default function RepairPage() {
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Qurilma</label>
                   <input type="text" value={oForm.qurilma} onChange={e => setOForm(f => ({ ...f, qurilma: e.target.value }))} placeholder="iPhone 14 Pro, Samsung A54..."
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Muammo</label>
                   <input type="text" value={oForm.muammo} onChange={e => setOForm(f => ({ ...f, muammo: e.target.value }))} placeholder="Ekran singan, batareya..."
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Narx (so'm)</label>
                   <input type="number" value={oForm.narx ? Math.round(oForm.narx * 12700) : ''} onChange={e => setOForm(f => ({ ...f, narx: Math.round((+e.target.value || 0) / 12700 * 100) / 100 }))} placeholder="0"
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
                 <div>
                   <label className="block text-[13px] font-semibold text-blue-500 mb-1.5">Izoh</label>
                   <input type="text" value={oForm.izoh} onChange={e => setOForm(f => ({ ...f, izoh: e.target.value }))} placeholder="Qo'shimcha ma'lumot..."
-                    className="w-full bg-gray-100 dark:bg-[#2c2c2e] border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
+                    className="w-full bg-gray-100 bg-gray-200/80 border-0 rounded-xl px-4 py-3 text-[15px] text-gray-900  placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all" />
                 </div>
               </div>
             </div>
@@ -374,12 +374,12 @@ export default function RepairPage() {
 
         {/* ═══ DETAIL MODAL ═══ */}
         {detailOrder && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setDetailOrder(null)}>
-            <div className="bg-white dark:bg-[#1c1c1e] w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" /></div>
-              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100 dark:border-gray-700/50 flex-shrink-0">
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center" onClick={() => setDetailOrder(null)}>
+            <div className="bg-white/70 backdrop-blur-xl w-full max-w-md rounded-t-[28px] sm:rounded-[28px] overflow-hidden shadow-2xl max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-center pt-3 pb-1 sm:hidden"><div className="w-10 h-1 rounded-full bg-gray-300 " /></div>
+              <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100  flex-shrink-0">
                 <button onClick={() => setDetailOrder(null)} className="text-[16px] text-blue-500 font-medium">Yopish</button>
-                <span className="text-[16px] font-bold text-gray-900 dark:text-white">Buyurtma #{detailOrder.id.toString().slice(-4)}</span>
+                <span className="text-[16px] font-bold text-gray-900 ">Buyurtma #{detailOrder.id.toString().slice(-4)}</span>
                 <button onClick={() => printChek(detailOrder)} className="text-[16px] text-blue-500 font-medium">Chek</button>
               </div>
               <div className="p-6 space-y-4 flex-1 overflow-y-auto">
@@ -403,13 +403,13 @@ export default function RepairPage() {
                   ].map(([k, v], i, arr) => (
                     <IOSRow key={k as string} last={i === arr.length - 1}
                       left={<span className="text-[14px] text-gray-500">{k}</span>}
-                      right={<span className="text-[14px] font-medium text-gray-900 dark:text-white">{v}</span>} />
+                      right={<span className="text-[14px] font-medium text-gray-900 ">{v}</span>} />
                   ))}
                 </IOSSection>
 
                 {detailOrder.izoh && (
                   <IOSSection title="Izoh">
-                    <div className="px-4 py-3 text-[14px] text-gray-700 dark:text-gray-300">{detailOrder.izoh}</div>
+                    <div className="px-4 py-3 text-[14px] text-gray-700 ">{detailOrder.izoh}</div>
                   </IOSSection>
                 )}
 
@@ -419,7 +419,7 @@ export default function RepairPage() {
                   {detailOrder.holat === 'diagnostika' && <button onClick={() => { changeHolat(detailOrder.id, 'tamirlashda'); setDetailOrder(null) }} className="w-full py-3 rounded-xl bg-blue-500 text-white font-semibold text-[15px]">🔧 Tamirlashga olish</button>}
                   {detailOrder.holat === 'tamirlashda' && <button onClick={() => { changeHolat(detailOrder.id, 'tayyor'); setDetailOrder(null) }} className="w-full py-3 rounded-xl bg-green-500 text-white font-semibold text-[15px]">✅ Tayyor deb belgilash</button>}
                   {detailOrder.holat === 'tayyor' && <button onClick={() => { changeHolat(detailOrder.id, 'topshirildi'); setDetailOrder(null) }} className="w-full py-3 rounded-xl bg-purple-500 text-white font-semibold text-[15px]">🏁 Topshirildi</button>}
-                  <button onClick={() => { printChek(detailOrder); }} className="w-full py-3 rounded-xl bg-gray-100 dark:bg-[#2c2c2e] text-gray-700 dark:text-gray-300 font-semibold text-[15px] border border-gray-200 dark:border-gray-700">🖨️ Chek chiqarish</button>
+                  <button onClick={() => { printChek(detailOrder); }} className="w-full py-3 rounded-xl bg-gray-100 bg-gray-200/80 text-gray-700  font-semibold text-[15px] border border-gray-200 dark:border-gray-700">🖨️ Chek chiqarish</button>
                 </div>
               </div>
             </div>
