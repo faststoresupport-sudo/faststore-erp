@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { key: 'xaridorlar', label: 'Xaridorlar', icon: '👥', href: '/customers' },
   { key: 'brak', label: 'Brak / Qaytarish', icon: '🔴', href: '/defects' },
   { key: 'tamirlash', label: 'Tamirlash', icon: '🔧', href: '/repair' },
+  { key: 'akkountlar', label: 'Akkountlar', icon: '🔐', href: '/accounts' },
   { key: 'hisobot', label: 'Hisobotlar', icon: '📊', href: '/reports' },
   { key: 'users', label: 'Foydalanuvchilar', icon: '🔑', href: '/users' },
   { key: 'sozlamalar', label: 'Sozlamalar', icon: '⚙️', href: '/settings' },
@@ -23,10 +24,10 @@ const NAV_ITEMS = [
 
 // Rol bo'yicha ruxsatlar
 const PERMISSIONS: Record<string, string[]> = {
-  superadmin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'hisobot', 'users', 'sozlamalar'],
+  superadmin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'akkountlar', 'hisobot', 'users', 'sozlamalar'],
   admin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'hisobot', 'sozlamalar'],
   sotuvchi: ['dash', 'sotuv', 'qarz', 'xaridorlar', 'brak', 'sozlamalar'],
-  usta: ['dash', 'tamirlash', 'brak', 'xaridorlar', 'sozlamalar'],
+  usta: ['dash', 'tamirlash', 'brak', 'xaridorlar', 'akkountlar', 'sozlamalar'],
 }
 
 const ROL_COLORS: Record<string, string> = {
