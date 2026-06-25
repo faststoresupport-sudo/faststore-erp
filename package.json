@@ -1,51 +1,32 @@
 {
   "name": "faststore-erp",
   "version": "3.0.0",
-  "description": "FastStore ERP - Do'kon Boshqaruv Tizimi",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "14.0.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "axios": "^1.6.2",
+    "js-cookie": "^3.0.5",
+    "react-hot-toast": "^2.4.1",
+    "clsx": "^2.0.0"
+  },
+  "devDependencies": {
     "typescript": "^5.3.3",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
+    "@types/js-cookie": "^3.0.6",
     "tailwindcss": "^3.3.6",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
-    "lucide-react": "^0.300.0",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.2.0",
-    "axios": "^1.6.2",
-    "js-cookie": "^3.0.5",
-    "@types/js-cookie": "^3.0.6",
-    "react-hot-toast": "^2.4.1",
-    "date-fns": "^3.0.6",
-    "recharts": "^2.8.0",
-    "framer-motion": "^10.16.16",
-    "react-dropzone": "^14.2.3",
-    "xlsx": "^0.18.5",
-    "jspdf": "^2.5.1",
-    "html2canvas": "^1.4.1"
-  },
-  "devDependencies": {
     "eslint": "^8.56.0",
-    "eslint-config-next": "14.0.4",
-    "@tailwindcss/forms": "^0.5.7"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "author": "FastStore Team",
-  "license": "MIT",
-  "keywords": ["erp", "faststore", "nextjs", "typescript", "tailwind"]
+    "eslint-config-next": "14.0.4"
+  }
 }
