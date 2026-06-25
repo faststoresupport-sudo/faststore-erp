@@ -71,12 +71,29 @@ const KATEGORIYALAR = ['Barchasi', 'Elektronika', 'Aksesuar', 'Zapchast', 'Kiyim
 
 export default function ProductsPage() {
   const { user } = useAuth()
-  const [products, setProducts] = useState<Product[]>(DEMO_PRODUCTS)
+  const [products, setProductsState] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedKategoriya, setSelectedKategoriya] = useState('Barchasi')
   const [modalOpen, setModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
+  // localStorage dan yuklash
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('faststore_products')
+      if (saved) { setProductsState(JSON.parse(saved)) }
+    } catch {}
+  }, [])
+
+  // Products o'zgarganda localStorage ga saqlash
+  const setProducts = (updater: (prev: Product[]) => Product[]) => {
+    setProductsState(prev => {
+      const updated = typeof updater === 'function' ? updater(prev) : updater
+      localStorage.setItem('faststore_products', JSON.stringify(updated))
+      return updated
+    })
+  }
 
   // Admin faqat o'z kategoriyasini ko'radi
   const userKategoriya = user?.rol === 'admin' && user?.kategoriya ? user.kategoriya : null

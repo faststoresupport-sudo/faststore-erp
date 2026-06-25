@@ -81,9 +81,30 @@ const DEMO_PRODUCTS: Product[] = [
 
 export default function SalesPage() {
   const { user } = useAuth()
-  const [sales, setSales] = useState<Sale[]>(DEMO_SALES)
-  const [customers, setCustomers] = useState<Customer[]>(DEMO_CUSTOMERS)
-  const [products] = useState<Product[]>(DEMO_PRODUCTS)
+  const [sales, setSalesState] = useState<Sale[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+
+  // localStorage dan yuklash
+  useEffect(() => {
+    try {
+      const savedSales = localStorage.getItem('faststore_sales')
+      if (savedSales) setSalesState(JSON.parse(savedSales))
+      const savedCustomers = localStorage.getItem('faststore_customers')
+      if (savedCustomers) setCustomers(JSON.parse(savedCustomers))
+      const savedProducts = localStorage.getItem('faststore_products')
+      if (savedProducts) setProducts(JSON.parse(savedProducts))
+    } catch {}
+  }, [])
+
+  // Sales saqlash wrapper
+  const setSales = (updater: any) => {
+    setSalesState((prev: Sale[]) => {
+      const updated = typeof updater === 'function' ? updater(prev) : updater
+      localStorage.setItem('faststore_sales', JSON.stringify(updated))
+      return updated
+    })
+  }
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('Barchasi')
