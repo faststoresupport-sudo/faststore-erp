@@ -1,92 +1,91 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
 import { toast } from 'react-hot-toast'
-import type { User, LoginRequest } from '@/types'
+import type { User } from '@/types'
 
-// Demo users
-const DEMO_USERS: User[] = [
-  { 
-    id: 1, 
-    ism: 'Sardor Aliyev', 
-    login: 'sardor', 
-    rol: 'superadmin', 
-    filial: 'Asosiy', 
+// ═══════════════════════════════════════════════════════
+// HAQIQIY FOYDALANUVCHILAR (demo emas!)
+// Faqat 1 ta superadmin - qolganlari registratsiya orqali
+// ═══════════════════════════════════════════════════════
+const SYSTEM_USERS: (User & { parol: string })[] = [
+  {
+    id: 1,
+    ism: 'Super Admin',
+    login: 'superadmin',
+    parol: 'admin123',
+    rol: 'superadmin',
+    filial: 'Asosiy',
     kategoriya: null,
-    telefon: '+998901234567'
-  },
-  { 
-    id: 2, 
-    ism: 'Malika Yusupova', 
-    login: 'malika', 
-    rol: 'admin', 
-    filial: 'Asosiy', 
-    kategoriya: 'Elektronika',
-    telefon: '+998902345678'
-  },
-  { 
-    id: 3, 
-    ism: 'Jasur Toshmatov', 
-    login: 'jasur', 
-    rol: 'sotuvchi', 
-    filial: 'Asosiy', 
-    kategoriya: null,
-    telefon: '+998903456789'
-  },
-  { 
-    id: 4, 
-    ism: 'Bobur Karimov', 
-    login: 'bobur', 
-    rol: 'usta', 
-    filial: 'Asosiy', 
-    kategoriya: null,
-    telefon: '+998904567890'
+    telefon: '',
   },
 ]
+
+interface LoginRequest {
+  login: string
+  parol: string
+}
 
 interface AuthContextType {
   user: User | null
   loading: boolean
   login: (credentials: LoginRequest) => Promise<User>
-  loginWithGoogle: (account: any) => Promise<User>
+  loginWithGoogle: (token: string) => Promise<User>
   loginWithPhone: (phone: string, code: string) => Promise<User>
+  sendSmsCode: (phone: string) => Promise<boolean>
+  register: (data: RegisterData) => Promise<User>
   logout: () => void
   updateProfile: (data: Partial<User>) => Promise<void>
   hasPermission: (permission: string) => boolean
+  allUsers: User[]
+  addUser: (user: User & { parol: string }) => void
+}
+
+interface RegisterData {
+  ism: string
+  login: string
+  parol: string
+  rol: 'admin' | 'sotuvchi' | 'usta'
+  telefon?: string
+  kategoriya?: string
+}
+
+// Role permissions
+const PERMISSIONS: Record<string, string[]> = {
+  superadmin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'akkountlar', 'hisobot', 'users', 'sozlamalar'],
+  admin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'hisobot', 'sozlamalar'],
+  sotuvchi: ['dash', 'sotuv', 'qarz', 'xaridorlar', 'brak', 'sozlamalar'],
+  usta: ['dash', 'tamirlash', 'brak', 'xaridorlar', 'akkountlar', 'sozlamalar'],
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Role permissions
-const PERMISSIONS = {
-  superadmin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'hisobot', 'users', 'sozlamalar'],
-  admin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'brak', 'tamirlash', 'hisobot', 'sozlamalar'],
-  sotuvchi: ['dash', 'sotuv', 'qarz', 'xaridorlar', 'brak', 'sozlamalar'],
-  usta: ['dash', 'tamirlash', 'brak', 'xaridorlar', 'sozlamalar'], // ⭐ Usta uchun xaridorlar qo'shildi
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [registeredUsers, setRegisteredUsers] = useState<(User & { parol: string })[]>([])
 
   useEffect(() => {
     checkAuth()
+    // localStorage dan registratsiya qilingan userlarni yuklash
+    const saved = localStorage.getItem('registered_users')
+    if (saved) {
+      try { setRegisteredUsers(JSON.parse(saved)) } catch {}
+    }
   }, [])
+
+  // Barcha userlar (system + registered)
+  const allUsers: (User & { parol: string })[] = [...SYSTEM_USERS, ...registeredUsers]
 
   const checkAuth = async () => {
     try {
       const token = Cookies.get('auth_token')
       const userData = localStorage.getItem('user_data')
-      
       if (token && userData) {
-        const parsedUser = JSON.parse(userData)
-        setUser(parsedUser)
+        setUser(JSON.parse(userData))
       }
-    } catch (error) {
-      console.error('Auth check failed:', error)
+    } catch {
       Cookies.remove('auth_token')
       localStorage.removeItem('user_data')
     } finally {
@@ -94,155 +93,175 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // ═══ LOGIN/PAROL ═══
   const login = async (credentials: LoginRequest): Promise<User> => {
+    setLoading(true)
     try {
-      setLoading(true)
+      // TODO: Real API call
+      // const response = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) })
 
-      // Demo uchun - haqiqiy API call o'rniga
-      const user = DEMO_USERS.find(u => 
-        u.login === credentials.login && 
-        credentials.parol === '1234' // Demo parol
+      const foundUser = allUsers.find(u =>
+        u.login === credentials.login && u.parol === credentials.parol
       )
 
-      if (!user) {
+      if (!foundUser) {
         throw new Error('Login yoki parol noto\'g\'ri!')
       }
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      // Save auth data
-      const token = 'demo_token_' + Date.now()
+      const { parol, ...userData } = foundUser
+      const token = 'token_' + Date.now() + '_' + Math.random().toString(36).slice(2)
       Cookies.set('auth_token', token, { expires: 7 })
-      localStorage.setItem('user_data', JSON.stringify(user))
-      
-      setUser(user)
-      toast.success(`Xush kelibsiz, ${user.ism}!`)
-      
-      return user
+      localStorage.setItem('user_data', JSON.stringify(userData))
+      setUser(userData)
+      toast.success(`Xush kelibsiz, ${userData.ism}!`)
+      return userData
     } catch (error: any) {
-      toast.error(error.message || 'Kirish jarayonida xatolik')
+      toast.error(error.message)
       throw error
     } finally {
       setLoading(false)
     }
   }
 
-  const loginWithGoogle = async (account: any): Promise<User> => {
+  // ═══ GOOGLE AUTH ═══
+  const loginWithGoogle = async (googleToken: string): Promise<User> => {
+    setLoading(true)
     try {
-      setLoading(true)
+      // TODO: Real Google OAuth verification
+      // const response = await fetch('/api/auth/google', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ token: googleToken })
+      // })
+      // const data = await response.json()
+      // if (!response.ok) throw new Error(data.error)
+      // return data.user
 
-      // Demo Google accounts
-      const googleAccounts = [
-        { email: 'sardor.aliyev@gmail.com', user: DEMO_USERS[0] },
-        { email: 'malika.yusupova@gmail.com', user: DEMO_USERS[1] },
-        { email: 'jasur.toshmatov@gmail.com', user: DEMO_USERS[2] },
-        { email: 'bobur.karimov@gmail.com', user: DEMO_USERS[3] },
-      ]
-
-      const matchedAccount = googleAccounts.find(acc => acc.email === account.email)
-      if (!matchedAccount) {
-        throw new Error('Bu Google hisob tizimga ro\'yxatdan o\'tmagan!')
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1200))
-
-      const token = 'google_token_' + Date.now()
-      Cookies.set('auth_token', token, { expires: 7 })
-      localStorage.setItem('user_data', JSON.stringify(matchedAccount.user))
-      
-      setUser(matchedAccount.user)
-      toast.success(`Google orqali muvaffaqiyatli kirdingiz!`)
-      
-      return matchedAccount.user
+      throw new Error('Google OAuth hali ulanmagan. Backend serverda /api/auth/google endpoint yarating.')
     } catch (error: any) {
-      toast.error(error.message || 'Google login xatolik')
+      toast.error(error.message)
       throw error
     } finally {
       setLoading(false)
     }
   }
 
+  // ═══ SMS CODE YUBORISH ═══
+  const sendSmsCode = async (phone: string): Promise<boolean> => {
+    try {
+      // TODO: Real SMS API (Eskiz.uz)
+      // const response = await fetch('/api/auth/send-sms', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ phone })
+      // })
+      // const data = await response.json()
+      // if (!response.ok) throw new Error(data.error)
+      // return true
+
+      throw new Error('SMS xizmati hali ulanmagan. Backend serverda Eskiz.uz API ni ulang.')
+    } catch (error: any) {
+      toast.error(error.message)
+      throw error
+    }
+  }
+
+  // ═══ PHONE AUTH ═══
   const loginWithPhone = async (phone: string, code: string): Promise<User> => {
+    setLoading(true)
     try {
-      setLoading(true)
+      // TODO: Real SMS verification
+      // const response = await fetch('/api/auth/verify-sms', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ phone, code })
+      // })
+      // const data = await response.json()
+      // if (!response.ok) throw new Error(data.error)
 
-      // Demo SMS verification
-      if (code !== '1234') { // Demo kod
-        throw new Error('SMS kod noto\'g\'ri!')
-      }
-
-      // Phone'ga mos user topish yoki yangi user yaratish
-      const existingUser = DEMO_USERS.find(u => u.telefon === phone)
-      const user = existingUser || {
-        id: Date.now(),
-        ism: 'Telefon foydalanuvchisi',
-        login: phone,
-        rol: 'sotuvchi' as const,
-        telefon: phone,
-        filial: 'Asosiy'
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 800))
-
-      const token = 'sms_token_' + Date.now()
-      Cookies.set('auth_token', token, { expires: 7 })
-      localStorage.setItem('user_data', JSON.stringify(user))
-      
-      setUser(user)
-      toast.success('SMS orqali muvaffaqiyatli kirdingiz!')
-      
-      return user
+      throw new Error('SMS tasdiqlash hali ulanmagan. Backend serverda /api/auth/verify-sms endpoint yarating.')
     } catch (error: any) {
-      toast.error(error.message || 'SMS login xatolik')
+      toast.error(error.message)
       throw error
     } finally {
       setLoading(false)
     }
   }
 
+  // ═══ REGISTER ═══
+  const register = async (data: RegisterData): Promise<User> => {
+    try {
+      // Tekshirish
+      if (!data.ism || !data.login || !data.parol) {
+        throw new Error('Ism, login va parol majburiy!')
+      }
+      if (data.parol.length < 6) {
+        throw new Error('Parol kamida 6 ta belgi bo\'lishi kerak!')
+      }
+      if (allUsers.find(u => u.login === data.login)) {
+        throw new Error('Bu login band! Boshqa login tanlang.')
+      }
+
+      // TODO: Real API call
+      // const response = await fetch('/api/auth/register', { method: 'POST', body: JSON.stringify(data) })
+
+      const newUser: User & { parol: string } = {
+        id: Date.now(),
+        ism: data.ism,
+        login: data.login,
+        parol: data.parol,
+        rol: data.rol,
+        telefon: data.telefon || '',
+        kategoriya: data.kategoriya || null,
+        filial: 'Asosiy',
+      }
+
+      const updated = [...registeredUsers, newUser]
+      setRegisteredUsers(updated)
+      localStorage.setItem('registered_users', JSON.stringify(updated))
+
+      toast.success('Ro\'yxatdan o\'tdingiz! Endi login qiling.')
+      return newUser
+    } catch (error: any) {
+      toast.error(error.message)
+      throw error
+    }
+  }
+
+  // ═══ LOGOUT ═══
   const logout = () => {
     Cookies.remove('auth_token')
     localStorage.removeItem('user_data')
     setUser(null)
-    router.push('/')
-    toast.success('Tizimdan chiqildi')
+    toast.success('Tizimdan chiqdingiz')
   }
 
+  // ═══ UPDATE PROFILE ═══
   const updateProfile = async (data: Partial<User>) => {
-    try {
-      if (!user) throw new Error('User not found')
-
-      // Demo update - haqiqiy API call o'rniga
-      const updatedUser = { ...user, ...data }
-      
-      localStorage.setItem('user_data', JSON.stringify(updatedUser))
-      setUser(updatedUser)
-      
-      toast.success('Profil yangilandi')
-    } catch (error: any) {
-      toast.error(error.message || 'Profil yangilanmadi')
-      throw error
-    }
+    if (!user) throw new Error('User not found')
+    const updated = { ...user, ...data }
+    localStorage.setItem('user_data', JSON.stringify(updated))
+    setUser(updated)
+    toast.success('Profil yangilandi')
   }
 
+  // ═══ PERMISSION CHECK ═══
   const hasPermission = (permission: string): boolean => {
     if (!user) return false
-    
-    const userPermissions = PERMISSIONS[user.rol] || []
-    return userPermissions.includes(permission)
+    return (PERMISSIONS[user.rol] || []).includes(permission)
+  }
+
+  // ═══ ADD USER (superadmin uchun) ═══
+  const addUser = (newUser: User & { parol: string }) => {
+    const updated = [...registeredUsers, newUser]
+    setRegisteredUsers(updated)
+    localStorage.setItem('registered_users', JSON.stringify(updated))
   }
 
   return (
     <AuthContext.Provider value={{
-      user,
-      loading,
-      login,
-      loginWithGoogle,
-      loginWithPhone,
-      logout,
-      updateProfile,
-      hasPermission
+      user, loading, login, loginWithGoogle, loginWithPhone, sendSmsCode,
+      register, logout, updateProfile, hasPermission, allUsers, addUser
     }}>
       {children}
     </AuthContext.Provider>
@@ -251,8 +270,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider')
   return context
 }

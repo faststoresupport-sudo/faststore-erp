@@ -32,51 +32,7 @@ interface Account {
 }
 
 // Demo ma'lumotlar
-const DEMO_ACCOUNTS: Account[] = [
-  {
-    id: 1,
-    type: 'google',
-    email: 'aliyev.bobur@gmail.com',
-    password: 'Bobur2024!',
-    owner_name: 'Aliyev Bobur',
-    owner_phone: '+998901234567',
-    birth_date: '1995-03-15',
-    created_date: '2024-01-10',
-    notes: 'Asosiy telefon uchun'
-  },
-  {
-    id: 2,
-    type: 'icloud',
-    email: 'bobur.aliyev@icloud.com',
-    password: 'iCloud#Secure99',
-    owner_name: 'Aliyev Bobur',
-    owner_phone: '+998901234567',
-    birth_date: '1995-03-15',
-    created_date: '2024-01-12',
-    notes: 'iPhone 14 Pro uchun'
-  },
-  {
-    id: 3,
-    type: 'samsung',
-    email: 'dilnoza.k@samsung.com',
-    password: 'Sam$ung2024',
-    owner_name: 'Karimova Dilnoza',
-    owner_phone: '+998932345678',
-    birth_date: '1998-07-22',
-    created_date: '2024-01-15',
-    notes: 'Samsung A54 uchun'
-  },
-  {
-    id: 4,
-    type: 'xiaomi',
-    email: 'jasur.mi@xiaomi.com',
-    password: 'Xiaomi@Pass1',
-    owner_name: 'Toshmatov Jasur',
-    owner_phone: '+998903456789',
-    birth_date: '2000-11-08',
-    created_date: '2024-01-18',
-  },
-]
+const DEMO_ACCOUNTS: Account[] = []
 
 export default function AccountsPage() {
   const { user } = useAuth()
