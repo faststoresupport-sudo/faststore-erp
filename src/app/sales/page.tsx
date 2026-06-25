@@ -8,10 +8,11 @@ import { SaleModal } from '@/components/sales/SaleModal'
 import { SalesStats } from '@/components/sales/SalesStats'
 import { SalesFilters } from '@/components/sales/SalesFilters'
 import { ReceiptModal } from '@/components/sales/ReceiptModal'
+import { LowStockTable } from '@/components/sales/LowStockTable'
 import { Button } from '@/components/ui/Button'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { toast } from 'react-hot-toast'
-import type { Sale, Customer } from '@/types'
+import type { Sale, Customer, Product } from '@/types'
 
 // Demo ma'lumotlar
 const DEMO_SALES: Sale[] = [
@@ -65,10 +66,24 @@ const DEMO_CUSTOMERS: Customer[] = [
   { id: 3, ism: 'Toshmatov Jasur', telefon: '+998903456789', manzil: 'Samarqand', izoh: 'Ulgurji xaridor' }
 ]
 
+// Kam qolgan mahsulotlar (miqdor < 10)
+const DEMO_PRODUCTS: Product[] = [
+  { id: 1, kod: 'SM-A54', nomi: 'Samsung Galaxy A54', kategoriya: 'Elektronika', birlik: 'dona', miqdor: 25, narx_usd: 252, chegirma: 0, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 2, kod: 'IP-14P', nomi: 'iPhone 14 Pro', kategoriya: 'Elektronika', birlik: 'dona', miqdor: 3, narx_usd: 984, chegirma: 5, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 3, kod: 'AK-001', nomi: 'USB-C Kabel 2m', kategoriya: 'Aksesuar', birlik: 'dona', miqdor: 150, narx_usd: 3.5, chegirma: 0, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 4, kod: 'AK-002', nomi: 'Qopqoq Samsung A54', kategoriya: 'Aksesuar', birlik: 'dona', miqdor: 4, narx_usd: 2.8, chegirma: 10, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 5, kod: 'ZP-001', nomi: 'Ekran Samsung A54', kategoriya: 'Zapchast', birlik: 'dona', miqdor: 2, narx_usd: 35, chegirma: 0, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 6, kod: 'KI-001', nomi: 'Nike Air Max', kategoriya: 'Kiyim', birlik: 'juft', miqdor: 30, narx_usd: 89, chegirma: 0, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 7, kod: 'OV-001', nomi: 'Lipton choy 100p', kategoriya: 'Oziq-ovqat', birlik: 'quti', miqdor: 200, narx_usd: 2.2, chegirma: 0, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 8, kod: 'EL-001', nomi: 'AirPods Pro 2', kategoriya: 'Elektronika', birlik: 'dona', miqdor: 5, narx_usd: 199, chegirma: 0, rasm_url: null, created_at: '', updated_at: '' },
+  { id: 9, kod: 'KI-002', nomi: 'Adidas Yeezy 350', kategoriya: 'Kiyim', birlik: 'juft', miqdor: 1, narx_usd: 220, chegirma: 5, rasm_url: null, created_at: '', updated_at: '' },
+]
+
 export default function SalesPage() {
   const { user } = useAuth()
   const [sales, setSales] = useState<Sale[]>(DEMO_SALES)
   const [customers, setCustomers] = useState<Customer[]>(DEMO_CUSTOMERS)
+  const [products] = useState<Product[]>(DEMO_PRODUCTS)
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('Barchasi')
@@ -239,7 +254,7 @@ export default function SalesPage() {
         </div>
 
         {/* Sales Table */}
-        <div className="card">
+        <div className="card mb-6">
           <SalesTable
             sales={filteredSales}
             loading={loading}
@@ -248,6 +263,9 @@ export default function SalesPage() {
             onPrintReceipt={handlePrintReceipt}
           />
         </div>
+
+        {/* ⚠️ Kam Qolgan Mahsulotlar */}
+        <LowStockTable products={products} />
 
         {/* Sale Modal */}
         {saleModal.open && (
