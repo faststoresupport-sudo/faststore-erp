@@ -93,10 +93,9 @@ export default function SalesPage() {
 
   // Filterlash
   const filteredSales = sales.filter(sale => {
-    const matchesSearch = sale.mijoz.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         sale.chek.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = (sale.mijoz || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (sale.chek || '').toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'Barchasi' || sale.holat === statusFilter
-    // Date filter logic shu yerda
     return matchesSearch && matchesStatus
   })
 
