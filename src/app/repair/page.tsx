@@ -3,313 +3,124 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
-import { RepairOrdersTable } from '@/components/repair/RepairOrdersTable'
-import { RepairModal } from '@/components/repair/RepairModal'
-import { RepairStats } from '@/components/repair/RepairStats'
-import { RepairFilters } from '@/components/repair/RepairFilters'
-import { RepairReceiptModal } from '@/components/repair/RepairReceiptModal'
-import { Button } from '@/components/ui/Button'
-import { SearchInput } from '@/components/ui/SearchInput'
-import { toast } from 'react-hot-toast'
-import type { RepairOrder, Customer } from '@/types'
 
-// Tamirlash holatlari
-const REPAIR_STATUSES = [
-  { value: 'qabul_qilindi', label: '📥 Qabul qilindi', color: 'gray' },
-  { value: 'diagnostika', label: '🔍 Diagnostika', color: 'orange' },
-  { value: 'tamirlashda', label: '🔧 Tamirlashda', color: 'blue' },
-  { value: 'tayyor', label: '✅ Tayyor', color: 'green' },
-  { value: 'topshirildi', label: '🏁 Topshirildi', color: 'purple' },
-  { value: 'bekor', label: '❌ Bekor qilindi', color: 'red' },
+const HOLATLAR = [
+  { val: 'qabul', label: '📥 Qabul qilindi', color: 'bg-gray-100 text-gray-700' },
+  { val: 'diagnostika', label: '🔍 Diagnostika', color: 'bg-orange-100 text-orange-700' },
+  { val: 'tamirlashda', label: '🔧 Tamirlashda', color: 'bg-blue-100 text-blue-700' },
+  { val: 'tayyor', label: '✅ Tayyor', color: 'bg-green-100 text-green-700' },
+  { val: 'topshirildi', label: '🏁 Topshirildi', color: 'bg-purple-100 text-purple-700' },
+  { val: 'bekor', label: '❌ Bekor', color: 'bg-red-100 text-red-700' },
 ]
 
-// Demo ma'lumotlar
-const DEMO_REPAIR_ORDERS: RepairOrder[] = [
-  {
-    id: 1,
-    customer_id: 1,
-    sana: '2024-01-18',
-    mijoz: 'Aliyev Bobur',
-    telefon: '+998901234567',
-    qurilma: 'Samsung Galaxy A54',
-    muammo: 'Ekran singan, touchscreen ishlamaydi',
-    holat: 'tamirlashda',
-    narx_usd: 35,
-    usta: 'bobur',
-    izoh: 'Ekran almashtirilmoqda'
-  },
-  {
-    id: 2,
-    customer_id: 2,
-    sana: '2024-01-20',
-    mijoz: 'Toshmatov Sanjar',
-    telefon: '+998901112233',
-    qurilma: 'iPhone 12',
-    muammo: 'Batareya tez tugaydi, qizib ketadi',
-    holat: 'diagnostika',
-    narx_usd: 0,
-    usta: 'bobur',
-    izoh: ''
-  },
-  {
-    id: 3,
-    customer_id: 3,
-    sana: '2024-01-21',
-    mijoz: 'Karimova Nilufar',
-    telefon: '+998907654321',
-    qurilma: 'Samsung TV 55"',
-    muammo: 'Ovoz chiqmayapti',
-    holat: 'tayyor',
-    narx_usd: 20,
-    usta: 'bobur',
-    izoh: 'Karnay almashtirildi'
-  }
-]
+interface RepairOrder { id: number; mijoz: string; telefon: string; qurilma: string; muammo: string; holat: string; narx: number; izoh: string; sana: string }
 
-const DEMO_CUSTOMERS: Customer[] = [
-  { id: 1, ism: 'Aliyev Bobur', telefon: '+998901234567', manzil: 'Toshkent', izoh: '' },
-  { id: 2, ism: 'Toshmatov Sanjar', telefon: '+998901112233', manzil: 'Toshkent', izoh: '' },
-  { id: 3, ism: 'Karimova Nilufar', telefon: '+998907654321', manzil: 'Toshkent', izoh: '' },
-]
+const STORAGE_KEY = 'faststore_repairs'
 
 export default function RepairPage() {
   const { user } = useAuth()
-  const [orders, setOrders] = useState<RepairOrder[]>(DEMO_REPAIR_ORDERS)
-  const [customers, setCustomers] = useState<Customer[]>(DEMO_CUSTOMERS)
-  const [loading, setLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('barchasi')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editingOrder, setEditingOrder] = useState<RepairOrder | null>(null)
-  const [receiptModal, setReceiptModal] = useState<{ open: boolean; order?: RepairOrder }>({ open: false })
+  const [orders, setOrders] = useState<RepairOrder[]>([])
+  const [modal, setModal] = useState(false)
+  const [editId, setEditId] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState('barchasi')
+  const [form, setForm] = useState({ mijoz: '', telefon: '+998', qurilma: '', muammo: '', holat: 'qabul', narx: 0, izoh: '' })
 
-  // Faqat usta uchun
-  if (user?.rol !== 'usta') {
-    return (
-      <DashboardLayout>
-        <div className="p-6">
-          <div className="card p-8 text-center">
-            <div className="text-6xl mb-4">🔒</div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              Ruxsat yo'q
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400">
-              Bu sahifaga faqat usta roli bilan kirish mumkin.
-            </p>
-          </div>
-        </div>
-      </DashboardLayout>
-    )
-  }
+  useEffect(() => { try { const s = localStorage.getItem(STORAGE_KEY); if (s) setOrders(JSON.parse(s)) } catch {} }, [])
+  const save = (list: RepairOrder[]) => { setOrders(list); localStorage.setItem(STORAGE_KEY, JSON.stringify(list)) }
 
-  // Filterlash
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.mijoz.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.qurilma.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.id.toString().includes(searchQuery)
-    const matchesStatus = statusFilter === 'barchasi' || order.holat === statusFilter
-    return matchesSearch && matchesStatus
+  const filtered = orders.filter(o => {
+    const ms = (o.mijoz || '').toLowerCase().includes(search.toLowerCase()) || (o.qurilma || '').toLowerCase().includes(search.toLowerCase())
+    const mf = filter === 'barchasi' || o.holat === filter
+    return ms && mf
   })
 
-  // Statistika
-  const stats = {
-    jami: orders.length,
-    qabul: orders.filter(o => o.holat === 'qabul_qilindi').length,
-    jarayonda: orders.filter(o => ['diagnostika', 'tamirlashda'].includes(o.holat)).length,
-    tayyor: orders.filter(o => o.holat === 'tayyor').length,
-    topshirildi: orders.filter(o => o.holat === 'topshirildi').length,
-    daromad: orders.filter(o => o.holat === 'topshirildi').reduce((sum, o) => sum + o.narx_usd, 0)
+  const stats = { jami: orders.length, jarayonda: orders.filter(o => ['qabul', 'diagnostika', 'tamirlashda'].includes(o.holat)).length, tayyor: orders.filter(o => o.holat === 'tayyor').length, topshirildi: orders.filter(o => o.holat === 'topshirildi').length }
+
+  const openAdd = () => { setEditId(null); setForm({ mijoz: '', telefon: '+998', qurilma: '', muammo: '', holat: 'qabul', narx: 0, izoh: '' }); setModal(true) }
+  const openEdit = (o: RepairOrder) => { setEditId(o.id); setForm({ mijoz: o.mijoz, telefon: o.telefon, qurilma: o.qurilma, muammo: o.muammo, holat: o.holat, narx: o.narx, izoh: o.izoh }); setModal(true) }
+
+  const handleSave = () => {
+    if (!form.mijoz || !form.qurilma) { alert('Mijoz va qurilma majburiy!'); return }
+    if (editId) { save(orders.map(o => o.id === editId ? { ...o, ...form, narx: +form.narx } : o)) }
+    else { save([...orders, { id: Date.now(), ...form, narx: +form.narx, sana: new Date().toISOString().split('T')[0] }]) }
+    setModal(false)
   }
 
-  const handleNewOrder = () => {
-    setEditingOrder(null)
-    setModalOpen(true)
-  }
+  const changeHolat = (id: number, holat: string) => save(orders.map(o => o.id === id ? { ...o, holat } : o))
+  const handleDelete = (id: number) => { if (confirm("O'chirilsinmi?")) save(orders.filter(o => o.id !== id)) }
 
-  const handleEditOrder = (order: RepairOrder) => {
-    setEditingOrder(order)
-    setModalOpen(true)
-  }
-
-  const handleChangeStatus = async (orderId: number, newStatus: string) => {
-    try {
-      setLoading(true)
-      // API call
-      // await repairAPI.updateStatus(orderId, newStatus)
-      
-      // Demo uchun
-      setOrders(prev => prev.map(o => 
-        o.id === orderId ? { ...o, holat: newStatus } : o
-      ))
-      
-      const statusLabel = REPAIR_STATUSES.find(s => s.value === newStatus)?.label || newStatus
-      toast.success(`Holat ${statusLabel} ga o'zgartirildi`)
-    } catch (error) {
-      toast.error('Xatolik yuz berdi')
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSaveOrder = async (orderData: Partial<RepairOrder>) => {
-    try {
-      setLoading(true)
-      
-      if (editingOrder) {
-        // Update
-        setOrders(prev => prev.map(o => 
-          o.id === editingOrder.id 
-            ? { ...o, ...orderData }
-            : o
-        ))
-        toast.success('Buyurtma yangilandi')
-      } else {
-        // Create
-        const newOrder: RepairOrder = {
-          ...orderData as RepairOrder,
-          id: Date.now(),
-          sana: new Date().toISOString().split('T')[0],
-          usta: user.login,
-          holat: 'qabul_qilindi',
-          narx_usd: 0,
-          izoh: ''
-        }
-        setOrders(prev => [newOrder, ...prev])
-        toast.success('Yangi buyurtma yaratildi')
-      }
-      
-      setModalOpen(false)
-    } catch (error) {
-      toast.error('Xatolik yuz berdi')
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handlePrintReceipt = (order: RepairOrder) => {
-    const statusLabel = REPAIR_STATUSES.find(s => s.value === order.holat)?.label || order.holat
-    
-    const printWindow = window.open('', '_blank', 'width=380,height=500')
-    if (!printWindow) return
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <title>Tamirlash #${order.id}</title>
-        <style>
-          body { font-family: 'Courier New', monospace; font-size: 12px; padding: 16px; max-width: 280px; }
-          .center { text-align: center; }
-          .bold { font-weight: bold; }
-          .line { border-top: 1px dashed #333; margin: 8px 0; }
-          .row { display: flex; justify-content: space-between; margin: 3px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="center bold" style="font-size: 16px">🔧 FastStore Servis</div>
-        <div class="center">Tamirlash xizmati</div>
-        <div class="line"></div>
-        <div class="row"><span>Buyurtma #:</span><span class="bold">${order.id}</span></div>
-        <div class="row"><span>Sana:</span><span>${order.sana}</span></div>
-        <div class="row"><span>Mijoz:</span><span>${order.mijoz}</span></div>
-        <div class="row"><span>Tel:</span><span>${order.telefon}</span></div>
-        <div class="line"></div>
-        <div class="row"><span>Qurilma:</span><span class="bold">${order.qurilma}</span></div>
-        <div style="margin: 4px 0">Muammo: ${order.muammo}</div>
-        ${order.izoh ? '<div style="margin: 4px 0">Izoh: ' + order.izoh + '</div>' : ''}
-        <div class="line"></div>
-        <div class="row"><span>Holat:</span><span class="bold">${statusLabel}</span></div>
-        <div class="row">
-          <span>Narx:</span>
-          <span class="bold">${order.narx_usd > 0 ? (order.narx_usd * 12700).toLocaleString() + ' so\'m' : 'Aniqlanmagan'}</span>
-        </div>
-        <div class="line"></div>
-        <div class="center">Xizmatimizdan foydalanganingiz uchun rahmat!</div>
-      </body>
-      </html>
-    `)
-    printWindow.document.close()
-    printWindow.print()
-  }
+  const getHolat = (val: string) => HOLATLAR.find(h => h.val === val) || HOLATLAR[0]
 
   return (
     <DashboardLayout>
       <div className="p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-              🔧 Tamirlash Buyurtmalari
-              <span className="ml-3 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full text-sm font-medium">
-                👤 {user.ism} — Usta
-              </span>
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              {filteredOrders.length} ta buyurtma topildi
-            </p>
-          </div>
-          <Button 
-            onClick={handleNewOrder}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            ➕ Yangi buyurtma
-          </Button>
+          <div><h1 className="text-2xl font-bold text-gray-900 dark:text-white">🔧 Tamirlash Buyurtmalari</h1><p className="text-sm text-gray-500 mt-1">{filtered.length} ta buyurtma</p></div>
+          <button onClick={openAdd} className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-orange-500/30 transition-all">➕ Yangi buyurtma</button>
         </div>
 
-        {/* Stats */}
-        <RepairStats stats={stats} />
-
-        {/* Filters */}
-        <div className="card p-4 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <SearchInput
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Mijoz, qurilma yoki buyurtma raqami bo'yicha qidiring..."
-              />
-            </div>
-            <RepairFilters
-              statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
-              statuses={REPAIR_STATUSES}
-            />
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {[{ l: 'Jami', v: stats.jami, c: 'text-blue-600', i: '📋' }, { l: 'Jarayonda', v: stats.jarayonda, c: 'text-orange-500', i: '🔧' }, { l: 'Tayyor', v: stats.tayyor, c: 'text-green-500', i: '✅' }, { l: 'Topshirildi', v: stats.topshirildi, c: 'text-purple-500', i: '🏁' }].map((s, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"><div className="text-xl mb-1">{s.i}</div><div className="text-xs text-gray-400 uppercase">{s.l}</div><div className={`text-xl font-bold ${s.c}`}>{s.v}</div></div>
+          ))}
         </div>
 
-        {/* Orders Table/Cards */}
-        <RepairOrdersTable
-          orders={filteredOrders}
-          loading={loading}
-          onEdit={handleEditOrder}
-          onChangeStatus={handleChangeStatus}
-          onPrintReceipt={handlePrintReceipt}
-          onViewReceipt={(order) => setReceiptModal({ open: true, order })}
-          statuses={REPAIR_STATUSES}
-        />
+        <div className="flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="flex-1 relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span><input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Mijoz yoki qurilma..." className="w-full pl-11 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:border-blue-500 transition-all shadow-sm" /></div>
+          <div className="flex gap-2 flex-wrap">{[{ v: 'barchasi', l: 'Barchasi' }, ...HOLATLAR.map(h => ({ v: h.val, l: h.label }))].map(f => (<button key={f.v} onClick={() => setFilter(f.v)} className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${filter === f.v ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>{f.l}</button>))}</div>
+        </div>
 
-        {/* Repair Modal */}
-        {modalOpen && (
-          <RepairModal
-            order={editingOrder}
-            customers={customers}
-            onClose={() => setModalOpen(false)}
-            onSave={handleSaveOrder}
-            loading={loading}
-          />
+        {filtered.length === 0 ? (
+          <div className="card p-10 text-center"><div className="text-4xl mb-3">🔧</div><p className="font-bold">Buyurtma topilmadi</p></div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(o => { const h = getHolat(o.holat); return (
+              <div key={o.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+                <div className="p-4 flex items-center gap-4">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900/30 dark:to-orange-800/30 flex items-center justify-center text-lg flex-shrink-0">📱</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap"><span className="font-bold text-sm text-gray-900 dark:text-white">{o.qurilma}</span><span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${h.color}`}>{h.label}</span></div>
+                    <div className="text-xs text-gray-500">👤 {o.mijoz} · 📞 {o.telefon} · 📅 {o.sana}</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{o.muammo}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0"><div className="font-bold text-green-600">{o.narx > 0 ? Math.round(o.narx * 12700).toLocaleString() + " so'm" : '—'}</div></div>
+                </div>
+                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-700/30 border-t border-gray-100 dark:border-gray-700 flex gap-2 flex-wrap">
+                  <button onClick={() => openEdit(o)} className="text-xs px-3 py-1.5 bg-white dark:bg-gray-700 border rounded-lg font-medium">✏️ Tahrir</button>
+                  <button onClick={() => handleDelete(o.id)} className="text-xs px-3 py-1.5 bg-white dark:bg-gray-700 border border-red-200 text-red-600 rounded-lg font-medium">🗑️</button>
+                  <div className="flex-1" />
+                  {o.holat === 'qabul' && <button onClick={() => changeHolat(o.id, 'diagnostika')} className="text-xs px-3 py-1.5 bg-orange-500 text-white rounded-lg font-bold">🔍 Diagnostika</button>}
+                  {o.holat === 'diagnostika' && <button onClick={() => changeHolat(o.id, 'tamirlashda')} className="text-xs px-3 py-1.5 bg-blue-500 text-white rounded-lg font-bold">🔧 Tamirlash</button>}
+                  {o.holat === 'tamirlashda' && <button onClick={() => changeHolat(o.id, 'tayyor')} className="text-xs px-3 py-1.5 bg-green-500 text-white rounded-lg font-bold">✅ Tayyor</button>}
+                  {o.holat === 'tayyor' && <button onClick={() => changeHolat(o.id, 'topshirildi')} className="text-xs px-3 py-1.5 bg-purple-500 text-white rounded-lg font-bold">🏁 Topshirildi</button>}
+                </div>
+              </div>
+            )})}
+          </div>
         )}
 
-        {/* Receipt Modal */}
-        {receiptModal.open && receiptModal.order && (
-          <RepairReceiptModal
-            order={receiptModal.order}
-            onClose={() => setReceiptModal({ open: false })}
-            onPrint={() => handlePrintReceipt(receiptModal.order!)}
-            statuses={REPAIR_STATUSES}
-          />
+        {modal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setModal(false)}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between"><h3 className="text-lg font-bold">{editId ? '✏️ Tahrirlash' : '➕ Yangi buyurtma'}</h3><button onClick={() => setModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">✕</button></div>
+              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">👤 Mijoz</label><input type="text" value={form.mijoz} onChange={e => setForm(f => ({ ...f, mijoz: e.target.value }))} placeholder="Ism Familiya" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white" /></div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📞 Telefon</label><input type="tel" value={form.telefon} onChange={e => setForm(f => ({ ...f, telefon: e.target.value }))} placeholder="+998..." className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white" /></div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📱 Qurilma</label><input type="text" value={form.qurilma} onChange={e => setForm(f => ({ ...f, qurilma: e.target.value }))} placeholder="Samsung Galaxy A54..." className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white" /></div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">🔍 Muammo</label><input type="text" value={form.muammo} onChange={e => setForm(f => ({ ...f, muammo: e.target.value }))} placeholder="Ekran singan..." className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">💰 Narx (USD)</label><input type="number" value={form.narx} onChange={e => setForm(f => ({ ...f, narx: +e.target.value }))} className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white" /></div>
+                  <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📊 Holat</label><select value={form.holat} onChange={e => setForm(f => ({ ...f, holat: e.target.value }))} className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white">{HOLATLAR.map(h => <option key={h.val} value={h.val}>{h.label}</option>)}</select></div>
+                </div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📝 Izoh</label><input type="text" value={form.izoh} onChange={e => setForm(f => ({ ...f, izoh: e.target.value }))} placeholder="Izoh..." className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white" /></div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                <button onClick={handleSave} className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-xl font-bold text-sm shadow-lg">💾 {editId ? 'Yangilash' : 'Saqlash'}</button>
+                <button onClick={() => setModal(false)} className="flex-1 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600">Bekor</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </DashboardLayout>

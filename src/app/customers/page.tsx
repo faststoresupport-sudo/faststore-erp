@@ -3,316 +3,105 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
-import { CustomersTable } from '@/components/customers/CustomersTable'
-import { CustomerModal } from '@/components/customers/CustomerModal'
-import { CustomerHistory } from '@/components/customers/CustomerHistory'
-import { UstaMijozlar } from '@/components/customers/UstaMijozlar' // Usta uchun maxsus komponent
-import { Button } from '@/components/ui/Button'
-import { SearchInput } from '@/components/ui/SearchInput'
-import { toast } from 'react-hot-toast'
-import type { Customer, Sale, RepairOrder } from '@/types'
 
-// Demo ma'lumotlar
-const DEMO_CUSTOMERS: Customer[] = [
-  {
-    id: 1,
-    ism: 'Aliyev Bobur',
-    telefon: '+998901234567',
-    manzil: 'Toshkent, Yunusobod',
-    izoh: 'Doimiy mijoz',
-    created_at: '2024-01-10'
-  },
-  {
-    id: 2,
-    ism: 'Karimova Dilnoza',
-    telefon: '+998932345678',
-    manzil: 'Toshkent, Chilonzor', 
-    izoh: '',
-    created_at: '2024-01-12'
-  },
-  {
-    id: 3,
-    ism: 'Toshmatov Jasur',
-    telefon: '+998903456789',
-    manzil: 'Samarqand',
-    izoh: 'Ulgurji xaridor',
-    created_at: '2024-01-15'
-  },
-  {
-    id: 4,
-    ism: 'Rahimova Madina', // Usta mijozi
-    telefon: '+998901112233',
-    manzil: 'Toshkent, Mirobod',
-    izoh: 'Telefon tamirlash mijozi',
-    created_at: '2024-01-20'
-  }
-]
+interface Customer {
+  id: number
+  ism: string
+  telefon: string
+  manzil: string
+  izoh: string
+  created_at: string
+}
 
-const DEMO_SALES: Sale[] = [
-  {
-    id: 1,
-    chek: 'CH-001',
-    sana: '2024-01-15',
-    xaridor_id: 1,
-    mijoz: 'Aliyev Bobur',
-    items: [{ id: 1, mahsulot: 'Samsung Galaxy A54', miqdor: 2, narx_usd: 252, jami_usd: 504 }],
-    jami_usd: 504,
-    tolov: 'naqd',
-    holat: 'To\'langan',
-    sotuvchi: 'jasur'
-  }
-]
-
-// Usta uchun tamirlash buyurtmalari
-const DEMO_REPAIR_ORDERS: RepairOrder[] = [
-  {
-    id: 1,
-    customer_id: 4,
-    sana: '2024-01-20',
-    qurilma: 'Samsung Galaxy A54',
-    muammo: 'Ekran singan',
-    holat: 'tamirlashda',
-    narx_usd: 35,
-    usta: 'bobur',
-    izoh: 'Ekran almashtirilmoqda'
-  },
-  {
-    id: 2,
-    customer_id: 1,
-    sana: '2024-01-18',
-    qurilma: 'iPhone 12',
-    muammo: 'Batareya tez tugaydi',
-    holat: 'tayyor',
-    narx_usd: 25,
-    usta: 'bobur',
-    izoh: 'Batareya almashtirildi'
-  }
-]
+const STORAGE_KEY = 'faststore_customers'
 
 export default function CustomersPage() {
   const { user } = useAuth()
-  const [customers, setCustomers] = useState<Customer[]>(DEMO_CUSTOMERS)
-  const [sales, setSales] = useState<Sale[]>(DEMO_SALES)
-  const [repairOrders, setRepairOrders] = useState<RepairOrder[]>(DEMO_REPAIR_ORDERS)
-  const [loading, setLoading] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null)
-  const [historyModal, setHistoryModal] = useState<{ open: boolean; customer?: Customer }>({ open: false })
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [modal, setModal] = useState(false)
+  const [editId, setEditId] = useState<number | null>(null)
+  const [search, setSearch] = useState('')
+  const [form, setForm] = useState({ ism: '', telefon: '+998', manzil: '', izoh: '' })
 
-  // Usta rolini tekshirish
-  const isUsta = user?.rol === 'usta'
+  useEffect(() => {
+    try { const s = localStorage.getItem(STORAGE_KEY); if (s) setCustomers(JSON.parse(s)) } catch {}
+  }, [])
 
-  // Usta uchun faqat tamirlash mijozlari
-  const availableCustomers = isUsta 
-    ? customers.filter(c => repairOrders.some(r => r.customer_id === c.id))
-    : customers
+  const save = (list: Customer[]) => { setCustomers(list); localStorage.setItem(STORAGE_KEY, JSON.stringify(list)) }
 
-  // Filterlash
-  const filteredCustomers = availableCustomers.filter(customer =>
-    customer.ism.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.telefon.includes(searchQuery)
+  const filtered = customers.filter(c =>
+    (c.ism || '').toLowerCase().includes(search.toLowerCase()) ||
+    (c.telefon || '').includes(search)
   )
 
-  const handleAddCustomer = () => {
-    setEditingCustomer(null)
-    setModalOpen(true)
+  const openAdd = () => { setEditId(null); setForm({ ism: '', telefon: '+998', manzil: '', izoh: '' }); setModal(true) }
+  const openEdit = (c: Customer) => { setEditId(c.id); setForm({ ism: c.ism, telefon: c.telefon, manzil: c.manzil, izoh: c.izoh }); setModal(true) }
+
+  const handleSave = () => {
+    if (!form.ism) { alert('Ism majburiy!'); return }
+    if (editId) { save(customers.map(c => c.id === editId ? { ...c, ...form } : c)) }
+    else { save([...customers, { id: Date.now(), ...form, created_at: new Date().toISOString().split('T')[0] }]) }
+    setModal(false)
   }
 
-  const handleEditCustomer = (customer: Customer) => {
-    setEditingCustomer(customer)
-    setModalOpen(true)
-  }
+  const handleDelete = (id: number) => { if (confirm("O'chirilsinmi?")) save(customers.filter(c => c.id !== id)) }
 
-  const handleDeleteCustomer = async (customerId: number) => {
-    if (!window.confirm('Mijozni o\'chirmoqchimisiz?')) return
-
-    try {
-      setLoading(true)
-      // API call
-      // await customersAPI.delete(customerId)
-      
-      // Demo uchun
-      setCustomers(prev => prev.filter(c => c.id !== customerId))
-      toast.success('Mijoz o\'chirildi')
-    } catch (error) {
-      toast.error('Xatolik yuz berdi')
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSaveCustomer = async (customerData: Partial<Customer>) => {
-    try {
-      setLoading(true)
-      
-      if (editingCustomer) {
-        // Update
-        setCustomers(prev => prev.map(c => 
-          c.id === editingCustomer.id 
-            ? { ...c, ...customerData }
-            : c
-        ))
-        toast.success('Mijoz ma\'lumotlari yangilandi')
-      } else {
-        // Create
-        const newCustomer: Customer = {
-          ...customerData as Customer,
-          id: Date.now(),
-          created_at: new Date().toISOString()
-        }
-        setCustomers(prev => [newCustomer, ...prev])
-        toast.success('Yangi mijoz qo\'shildi')
-      }
-      
-      setModalOpen(false)
-    } catch (error) {
-      toast.error('Xatolik yuz berdi')
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleViewHistory = (customer: Customer) => {
-    setHistoryModal({ open: true, customer })
-  }
-
-  // Usta uchun alohida interfeys
-  if (isUsta) {
-    return (
-      <DashboardLayout>
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center">
-                👥 Mijozlarim
-                <span className="ml-3 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 rounded-full text-sm font-medium">
-                  🔧 Usta mijozlari
-                </span>
-              </h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">
-                {filteredCustomers.length} ta mijoz topildi
-              </p>
-            </div>
-            <Button 
-              onClick={handleAddCustomer}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              ➕ Yangi mijoz
-            </Button>
-          </div>
-
-          {/* Search */}
-          <div className="card p-4 mb-6">
-            <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Mijoz nomi yoki telefon raqami bo'yicha qidiring..."
-            />
-          </div>
-
-          {/* Usta mijozlar komponenti */}
-          <UstaMijozlar
-            customers={filteredCustomers}
-            repairOrders={repairOrders}
-            onAddRepair={(customerId) => {
-              // Tamirlash buyurtma modali
-              console.log('Add repair for customer:', customerId)
-            }}
-            onViewHistory={handleViewHistory}
-            onEditCustomer={handleEditCustomer}
-          />
-
-          {/* Customer Modal */}
-          {modalOpen && (
-            <CustomerModal
-              customer={editingCustomer}
-              onClose={() => setModalOpen(false)}
-              onSave={handleSaveCustomer}
-              loading={loading}
-            />
-          )}
-
-          {/* History Modal */}
-          {historyModal.open && historyModal.customer && (
-            <CustomerHistory
-              customer={historyModal.customer}
-              sales={sales.filter(s => s.xaridor_id === historyModal.customer?.id)}
-              repairOrders={repairOrders.filter(r => r.customer_id === historyModal.customer?.id)}
-              onClose={() => setHistoryModal({ open: false })}
-              isUsta={true}
-            />
-          )}
-        </div>
-      </DashboardLayout>
-    )
-  }
-
-  // Oddiy xaridorlar sahifasi (sotuvchi, admin, superadmin uchun)
   return (
     <DashboardLayout>
       <div className="p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              👥 Xaridorlar
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              {filteredCustomers.length} ta xaridor topildi
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">👥 Sotuvchi Xaridorlari</h1>
+            <p className="text-sm text-gray-500 mt-1">{filtered.length} ta xaridor</p>
           </div>
-          <Button 
-            onClick={handleAddCustomer}
-            className="bg-purple-500 hover:bg-purple-600 text-white"
-          >
-            ➕ Yangi xaridor
-          </Button>
+          <button onClick={openAdd} className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-500/30 transition-all">➕ Yangi xaridor</button>
         </div>
 
-        {/* Search */}
-        <div className="card p-4 mb-6">
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Xaridor nomi yoki telefon raqami bo'yicha qidiring..."
-          />
+        <div className="mb-6 relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Ism yoki telefon..."
+            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:border-blue-500 transition-all shadow-sm" />
         </div>
 
-        {/* Customers Table */}
-        <div className="card">
-          <CustomersTable
-            customers={filteredCustomers}
-            sales={sales}
-            loading={loading}
-            onEdit={handleEditCustomer}
-            onDelete={handleDeleteCustomer}
-            onViewHistory={handleViewHistory}
-          />
-        </div>
-
-        {/* Customer Modal */}
-        {modalOpen && (
-          <CustomerModal
-            customer={editingCustomer}
-            onClose={() => setModalOpen(false)}
-            onSave={handleSaveCustomer}
-            loading={loading}
-          />
+        {filtered.length === 0 ? (
+          <div className="card p-10 text-center"><div className="text-4xl mb-3">👥</div><p className="font-bold text-gray-800 dark:text-white">Xaridor topilmadi</p><p className="text-gray-400 text-sm mt-2">Yangi qo'shish uchun tugmani bosing</p></div>
+        ) : (
+          <div className="card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead><tr className="bg-gray-50 dark:bg-gray-700/50">{['Ism', 'Telefon', 'Manzil', 'Izoh', 'Sana', 'Amal'].map(c => <th key={c} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{c}</th>)}</tr></thead>
+              <tbody>{filtered.map(c => (
+                <tr key={c.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white">{c.ism}</td>
+                  <td className="px-4 py-3 text-blue-600 font-medium text-xs">{c.telefon}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{c.manzil || '—'}</td>
+                  <td className="px-4 py-3 text-gray-400 text-xs max-w-[150px] truncate">{c.izoh || '—'}</td>
+                  <td className="px-4 py-3 text-gray-400 text-xs">{c.created_at}</td>
+                  <td className="px-4 py-3"><div className="flex gap-1.5"><button onClick={() => openEdit(c)} className="w-7 h-7 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center text-xs">✏️</button><button onClick={() => handleDelete(c.id)} className="w-7 h-7 bg-red-100 text-red-700 rounded-lg flex items-center justify-center text-xs">🗑️</button></div></td>
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
         )}
 
-        {/* History Modal */}
-        {historyModal.open && historyModal.customer && (
-          <CustomerHistory
-            customer={historyModal.customer}
-            sales={sales.filter(s => s.xaridor_id === historyModal.customer?.id)}
-            repairOrders={[]} // Oddiy xaridorlar uchun tamirlash yo'q
-            onClose={() => setHistoryModal({ open: false })}
-            isUsta={false}
-          />
+        {modal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setModal(false)}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <h3 className="text-lg font-bold">{editId ? '✏️ Tahrirlash' : '➕ Yangi xaridor'}</h3>
+                <button onClick={() => setModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500">✕</button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">👤 Ism Familiya</label><input type="text" value={form.ism} onChange={e => setForm(f => ({ ...f, ism: e.target.value }))} placeholder="To'liq ism" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all" /></div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📞 Telefon</label><input type="tel" value={form.telefon} onChange={e => setForm(f => ({ ...f, telefon: e.target.value }))} placeholder="+998901234567" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all" /></div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📍 Manzil</label><input type="text" value={form.manzil} onChange={e => setForm(f => ({ ...f, manzil: e.target.value }))} placeholder="Shahar, tuman" className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all" /></div>
+                <div><label className="block text-xs font-bold text-gray-500 uppercase mb-2">📝 Izoh</label><input type="text" value={form.izoh} onChange={e => setForm(f => ({ ...f, izoh: e.target.value }))} placeholder="Doimiy mijoz..." className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 dark:bg-gray-700 dark:text-white transition-all" /></div>
+              </div>
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                <button onClick={handleSave} className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg">💾 {editId ? 'Yangilash' : 'Saqlash'}</button>
+                <button onClick={() => setModal(false)} className="flex-1 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-sm font-medium text-gray-600">Bekor</button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </DashboardLayout>
