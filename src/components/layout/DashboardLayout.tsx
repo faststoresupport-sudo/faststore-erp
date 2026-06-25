@@ -58,6 +58,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [currentPath, setCurrentPath] = useState('/')
 
+  // Haqiqiy URL ni aniqlash
+  useEffect(() => {
+    setCurrentPath(window.location.pathname)
+  }, [])
+
   if (!user) return null
 
   const userPermissions = PERMISSIONS[user.rol] || []
@@ -70,11 +75,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#f2f2f7' }}>
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-56' : 'w-16'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-200 flex-shrink-0`}>
+      <aside className={`${sidebarOpen ? 'w-56' : 'w-16'} bg-white/70 backdrop-blur-xl border-r border-gray-200/60 flex flex-col transition-all duration-200 flex-shrink-0`}>
         {/* Logo */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200/60">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-lg shadow-md shadow-blue-500/30 flex-shrink-0">
               ⚡
@@ -103,8 +108,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 onClick={() => handleNavClick(item)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-left text-sm transition-all ${
                   isActive
-                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold border-l-2 border-blue-500'
-                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200'
+                    ? 'bg-blue-50 text-blue-600 font-semibold'
+                    : 'text-gray-500  hover:bg-gray-50  hover:text-gray-900 '
                 }`}
               >
                 <span className="text-base flex-shrink-0">{item.icon}</span>
@@ -118,8 +123,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
 
         {/* User Card */}
-        <div className="p-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3 border border-gray-200 dark:border-gray-600">
+        <div className="p-3 border-t border-gray-200/60">
+          <div className="bg-gray-50 /50 rounded-xl p-3 border border-gray-200 ">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                 {user.ism[0]}
@@ -136,7 +141,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {sidebarOpen && (
               <button
                 onClick={logout}
-                className="w-full text-xs font-medium text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-lg py-1.5 hover:border-red-300 hover:text-red-500 transition-all"
+                className="w-full text-xs font-medium text-gray-500  border border-gray-200  rounded-lg py-1.5 hover:border-red-300 hover:text-red-500 transition-all"
               >
                 🚪 Chiqish
               </button>
@@ -147,8 +152,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
+        {/* Topbar */}
+        <header className="bg-white/70 backdrop-blur-xl border-b border-gray-200/60 px-6 py-3 flex items-center justify-between flex-shrink-0 shadow-sm">
           <div className="flex items-center gap-3">
             {/* Sidebar toggle */}
             <button
@@ -157,7 +162,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               ☰
             </button>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
+            <span className="text-sm text-gray-500 ">
               FastStore ERP
             </span>
           </div>
@@ -165,12 +170,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex items-center gap-3">
             {/* Currency Rate - REAL */}
             <button onClick={fetchRate} title={lastUpdated ? 'Yangilangan: ' + lastUpdated : 'Yangilash'} 
-              className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-100 transition-all">
+              className="px-3 py-1 bg-blue-50  border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-100 transition-all">
               {rateLoading ? '⏳' : '💱'} 1 USD = {rate.toLocaleString()} so'm
             </button>
 
             {/* Language */}
-            <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-full p-0.5">
+            <div className="flex gap-0.5 bg-gray-100  rounded-full p-0.5">
               {(['uz', 'ru', 'en'] as const).map((lang) => (
                 <button
                   key={lang}
@@ -178,7 +183,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
                     language === lang
                       ? 'bg-blue-500 text-white'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                      : 'text-gray-500  hover:text-gray-700'
                   }`}
                 >
                   {lang.toUpperCase()}
@@ -189,7 +194,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+              className="px-3 py-1.5 bg-gray-100  border border-gray-200  rounded-full text-sm hover:bg-gray-200  transition-all"
             >
               {isDark ? '☀️' : '🌙'}
             </button>
