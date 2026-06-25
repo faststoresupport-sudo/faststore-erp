@@ -1,0 +1,5 @@
+'use client'
+interface Props { stats: any }
+export function RepairStats({ stats }: Props) {
+  return <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">{[{ico:'📋',l:'Jami',v:stats.jami+'ta',c:'text-blue-600'},{ico:'📥',l:'Qabul',v:stats.qabul+'ta',c:'text-gray-500'},{ico:'🔧',l:'Jarayonda',v:stats.jarayonda+'ta',c:'text-orange-500'},{ico:'✅',l:'Tayyor',v:stats.tayyor+'ta',c:'text-green-500'},{ico:'🏁',l:'Topshirildi',v:stats.topshirildi+'ta',c:'text-purple-500'},{ico:'💰',l:'Daromad',v:Math.round(stats.daromad*12700).toLocaleString(),c:'text-green-600'}].map((s,i)=><div key={i} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm"><div className="text-lg mb-1">{s.ico}</div><div className="text-[10px] text-gray-400 uppercase">{s.l}</div><div className={`text-base font-bold ${s.c}`}>{s.v}</div></div>)}</div>
+}

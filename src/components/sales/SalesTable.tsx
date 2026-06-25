@@ -1,0 +1,8 @@
+'use client'
+import type { Sale } from '@/types'
+interface Props { sales: Sale[]; loading: boolean; onEdit: (s: Sale) => void; onViewReceipt: (s: Sale) => void; onPrintReceipt: (s: Sale) => void }
+export function SalesTable({ sales, loading, onEdit, onViewReceipt, onPrintReceipt }: Props) {
+  if (loading) return <div className="p-8 text-center text-gray-400">⏳ Yuklanmoqda...</div>
+  if (sales.length === 0) return <div className="p-8 text-center text-gray-400"><div className="text-4xl mb-3">🛒</div><div>Sotuv topilmadi</div></div>
+  return <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="bg-gray-50 dark:bg-gray-700/50">{['Chek','Sana','Mijoz','Jami','Holat','Amal'].map(c=><th key={c} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">{c}</th>)}</tr></thead><tbody>{sales.map(s=><tr key={s.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30"><td className="px-4 py-3 font-mono text-blue-600 font-bold text-xs">{s.chek}</td><td className="px-4 py-3 text-gray-500">{s.sana}</td><td className="px-4 py-3 font-semibold">{s.mijoz}</td><td className="px-4 py-3 font-bold text-green-600">{Math.round(s.jami_usd*12700).toLocaleString()} so'm</td><td className="px-4 py-3"><span className={`text-xs px-2 py-1 rounded-full font-bold ${s.holat==="To'langan"?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}`}>{s.holat}</span></td><td className="px-4 py-3"><div className="flex gap-2"><button onClick={()=>onEdit(s)} className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">✏️</button><button onClick={()=>onPrintReceipt(s)} className="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded">🖨️</button></div></td></tr>)}</tbody></table></div>
+}

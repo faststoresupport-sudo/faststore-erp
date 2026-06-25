@@ -1,0 +1,5 @@
+'use client'
+interface Props { stats: any }
+export function SalesStats({ stats }: Props) {
+  return <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">{[{icon:'📋',l:'Jami',v:stats.jami+' ta',c:'text-blue-600'},{icon:'✅',l:'To\'langan',v:Math.round(stats.tolanganSumma*12700).toLocaleString(),c:'text-green-600'},{icon:'📋',l:'Qarz',v:Math.round(stats.qarzSumma*12700).toLocaleString(),c:'text-red-500'},{icon:'💵',l:'Umumiy',v:Math.round(stats.jamiSumma*12700).toLocaleString(),c:'text-blue-600'}].map((s,i)=><div key={i} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"><div className="text-xl mb-1">{s.icon}</div><div className="text-xs text-gray-400 uppercase">{s.l}</div><div className={`text-lg font-bold ${s.c}`}>{s.v}</div></div>)}</div>
+}
