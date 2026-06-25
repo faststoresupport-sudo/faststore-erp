@@ -87,8 +87,8 @@ export default function ProductsPage() {
 
   // Filterlash
   const filteredProducts = availableProducts.filter(product => {
-    const matchesSearch = product.nomi.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.kod.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSearch = (product.nomi || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (product.kod || '').toLowerCase().includes(searchQuery.toLowerCase())
     const matchesKategoriya = selectedKategoriya === 'Barchasi' || product.kategoriya === selectedKategoriya
     return matchesSearch && matchesKategoriya
   })
