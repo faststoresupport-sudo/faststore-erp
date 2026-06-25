@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, ReactNode } from 'react'
+import { useState, useEffect, ReactNode } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useLanguage } from '@/hooks/useLanguage'
 import { useTheme } from '@/hooks/useTheme'
+import { useCurrency } from '@/hooks/useCurrency'
 
 // Navigatsiya elementlari
 const NAV_ITEMS = [
@@ -53,6 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth()
   const { t, language, setLanguage } = useLanguage()
   const { theme, setTheme, isDark } = useTheme()
+  const { rate, loading: rateLoading, fetchRate, lastUpdated } = useCurrency()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [currentPath, setCurrentPath] = useState('/')
 
@@ -161,10 +163,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Currency Rate */}
-            <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 rounded-full text-xs font-medium">
-              💱 1 USD = 12,700 so'm
-            </div>
+            {/* Currency Rate - REAL */}
+            <button onClick={fetchRate} title={lastUpdated ? 'Yangilangan: ' + lastUpdated : 'Yangilash'} 
+              className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-100 transition-all">
+              {rateLoading ? '⏳' : '💱'} 1 USD = {rate.toLocaleString()} so'm
+            </button>
 
             {/* Language */}
             <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-700 rounded-full p-0.5">

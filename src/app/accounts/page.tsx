@@ -100,7 +100,7 @@ export default function AccountsPage() {
 
   return (
     <DashboardLayout>
-      <div className="p-6 bg-gray-100 dark:bg-gray-900 min-h-full">
+      <div className="p-4 lg:p-6 bg-[#f2f2f7] dark:bg-[#000000] min-h-full">
         <div className="max-w-6xl mx-auto">
 
           {/* Header */}
