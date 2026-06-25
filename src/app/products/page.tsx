@@ -128,7 +128,6 @@ export default function ProductsPage() {
       
       if (editingProduct) {
         // Update
-        // const response = await productsAPI.update(editingProduct.id, productData)
         setProducts(prev => prev.map(p => 
           p.id === editingProduct.id 
             ? { ...p, ...productData, updated_at: new Date().toISOString() }
@@ -137,10 +136,16 @@ export default function ProductsPage() {
         toast.success('Mahsulot yangilandi')
       } else {
         // Create
-        // const response = await productsAPI.create(productData)
         const newProduct: Product = {
-          ...productData as Product,
           id: Date.now(),
+          kod: productData.kod || '',
+          nomi: productData.nomi || '',
+          kategoriya: productData.kategoriya || 'Boshqa',
+          birlik: productData.birlik || 'dona',
+          miqdor: productData.miqdor || 0,
+          narx_usd: productData.narx_usd || 0,
+          chegirma: productData.chegirma || 0,
+          rasm_url: productData.rasm_url || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
