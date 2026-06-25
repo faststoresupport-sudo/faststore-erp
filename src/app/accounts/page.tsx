@@ -141,56 +141,56 @@ export default function AccountsPage() {
               const isPassVisible = visiblePasswords[acc.id]
 
               return (
-                <div key={acc.id} className={`${style.bg} ${style.text} p-6 rounded-2xl shadow-xl relative overflow-hidden flex flex-col justify-between h-56 transform hover:scale-[1.02] transition-all duration-300`}>
+                <div key={acc.id} className={`${style.bg} ${style.text} p-5 rounded-2xl shadow-xl relative overflow-hidden flex flex-col justify-between min-h-[200px] transform hover:scale-[1.02] transition-all duration-300`}>
 
                   {/* Karta tepasi: Logotip va Turi */}
                   <div className="flex justify-between items-start z-10">
                     <div>
-                      <p className="text-xs opacity-75 uppercase tracking-widest">FastStore Card</p>
-                      <h3 className="text-xl font-bold mt-1">{style.name}</h3>
+                      <p className="text-[10px] opacity-75 uppercase tracking-widest">FastStore Card</p>
+                      <h3 className="text-base font-bold mt-0.5">{style.name}</h3>
                     </div>
-                    <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold">
+                    <div className="bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-semibold">
                       {acc.type.toUpperCase()}
                     </div>
                   </div>
 
                   {/* Karta o'rtasi: Login va Parol */}
-                  <div className="my-4 z-10">
-                    <p className="text-xs opacity-75">Login / Email</p>
-                    <p className="text-sm font-mono truncate mb-2">{acc.login}</p>
+                  <div className="my-3 z-10">
+                    <p className="text-[10px] opacity-75">Login / Email</p>
+                    <p className="text-xs font-mono truncate mb-1.5">{acc.login}</p>
 
-                    <p className="text-xs opacity-75">Parol</p>
+                    <p className="text-[10px] opacity-75">Parol</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-mono flex-1 truncate">
+                      <span className="text-xs font-mono flex-1 truncate">
                         {isPassVisible ? acc.password : '••••••••••••'}
                       </span>
-                      <button onClick={() => togglePassword(acc.id)} className="hover:opacity-80 transition text-sm bg-white/20 rounded-md w-7 h-7 flex items-center justify-center">
+                      <button onClick={() => togglePassword(acc.id)} className="hover:opacity-80 transition text-xs bg-white/20 rounded-md w-6 h-6 flex items-center justify-center flex-shrink-0">
                         {isPassVisible ? '🙈' : '👁️'}
                       </button>
                     </div>
                   </div>
 
                   {/* Karta pasti: Amal tugmalari */}
-                  <div className="flex justify-between items-center border-t border-white/20 pt-3 z-10">
+                  <div className="flex justify-between items-center border-t border-white/20 pt-2.5 z-10">
                     <button onClick={() => setSelectedAccount(acc)}
-                      className="flex items-center gap-1 text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition font-medium">
+                      className="flex items-center gap-1 text-[11px] bg-white/20 hover:bg-white/30 px-2.5 py-1.5 rounded-lg transition font-medium">
                       ℹ️ Batafsil
                     </button>
 
-                    <div className="flex gap-2">
-                      <button onClick={() => openEdit(acc)} className="p-1.5 bg-white/10 hover:bg-white/20 rounded-md transition" title="Tahrirlash">
+                    <div className="flex gap-1.5">
+                      <button onClick={() => openEdit(acc)} className="w-7 h-7 bg-white/10 hover:bg-white/20 rounded-md transition flex items-center justify-center text-xs" title="Tahrirlash">
                         ✏️
                       </button>
                       <button onClick={() => deleteAccount(acc.id)}
-                        className="p-1.5 bg-red-500/30 hover:bg-red-500/50 rounded-md transition text-red-200" title="O'chirish">
+                        className="w-7 h-7 bg-red-500/30 hover:bg-red-500/50 rounded-md transition text-red-200 flex items-center justify-center text-xs" title="O'chirish">
                         🗑️
                       </button>
                     </div>
                   </div>
 
                   {/* Bezak doira */}
-                  <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
-                  <div className="absolute -left-8 -top-8 w-24 h-24 bg-white/5 rounded-full blur-lg pointer-events-none"></div>
+                  <div className="absolute -right-8 -bottom-8 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                  <div className="absolute -left-6 -top-6 w-20 h-20 bg-white/5 rounded-full blur-lg pointer-events-none"></div>
                 </div>
               )
             })}
