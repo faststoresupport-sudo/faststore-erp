@@ -95,11 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ═══ LOGIN/PAROL ═══
   const login = async (credentials: LoginRequest): Promise<User> => {
-    setLoading(true)
     try {
+      setLoading(true)
       // TODO: Real API call
-      // const response = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) })
-
       const foundUser = allUsers.find(u =>
         u.login === credentials.login && u.parol === credentials.parol
       )
