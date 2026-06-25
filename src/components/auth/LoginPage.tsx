@@ -3,13 +3,6 @@
 import { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 
-const DEMO_USERS = [
-  { ism: 'Sardor Aliyev', login: 'sardor', parol: '1234', rol: 'superadmin', emoji: '👑' },
-  { ism: 'Malika Yusupova', login: 'malika', parol: '1234', rol: 'admin', emoji: '🔑' },
-  { ism: 'Jasur Toshmatov', login: 'jasur', parol: '1234', rol: 'sotuvchi', emoji: '🛒' },
-  { ism: 'Bobur Karimov', login: 'bobur', parol: '1234', rol: 'usta', emoji: '🔧' },
-]
-
 export function LoginPage() {
   const { login, loading } = useAuth()
   const [loginVal, setLoginVal] = useState('')
@@ -24,11 +17,6 @@ export function LoginPage() {
     } catch (err: any) {
       setError(err.message || 'Login yoki parol noto\'g\'ri!')
     }
-  }
-
-  const handleDemoLogin = (user: typeof DEMO_USERS[0]) => {
-    setLoginVal(user.login)
-    setParolVal(user.parol)
   }
 
   return (
@@ -92,35 +80,6 @@ export function LoginPage() {
             {loading ? '⏳ Kirish...' : 'Kirish →'}
           </button>
         </form>
-
-        {/* Demo accounts */}
-        <div className="mt-6 bg-gray-50 rounded-xl p-4 border border-gray-100">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-            Demo hisoblar (bosib kirish)
-          </p>
-          <div className="space-y-2">
-            {DEMO_USERS.map((user) => (
-              <div
-                key={user.login}
-                onClick={() => handleDemoLogin(user)}
-                className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                    {user.ism[0]}
-                  </div>
-                  <div>
-                    <div className="text-xs font-semibold text-gray-800">{user.ism}</div>
-                    <div className="text-[10px] text-gray-400">{user.emoji} {user.rol}</div>
-                  </div>
-                </div>
-                <span className="text-xs font-mono text-blue-500 bg-blue-50 px-2 py-0.5 rounded">
-                  {user.login}/{user.parol}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   )
