@@ -28,7 +28,7 @@ const PERMISSIONS: Record<string, string[]> = {
   superadmin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'usta_mijozlar', 'brak', 'tamirlash', 'akkountlar', 'hisobot', 'users', 'sozlamalar'],
   admin: ['dash', 'mahsulot', 'sotuv', 'xarid', 'kassa', 'qarz', 'xaridorlar', 'usta_mijozlar', 'brak', 'tamirlash', 'hisobot', 'sozlamalar'],
   sotuvchi: ['dash', 'sotuv', 'qarz', 'xaridorlar', 'brak', 'sozlamalar'],
-  usta: ['dash', 'tamirlash', 'brak', 'usta_mijozlar', 'akkountlar', 'sozlamalar'],
+  usta: ['dash', 'tamirlash', 'usta_mijozlar', 'akkountlar', 'sozlamalar'],
 }
 
 const ROL_COLORS: Record<string, string> = {
