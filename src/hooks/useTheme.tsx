@@ -22,9 +22,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (savedTheme) {
       setThemeState(savedTheme)
     } else {
-      // Default to system preference
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setThemeState(systemPrefersDark ? 'dark' : 'light')
+      // Default to LIGHT (qora bo'lmasligi uchun)
+      setThemeState('light')
     }
   }, [])
 
